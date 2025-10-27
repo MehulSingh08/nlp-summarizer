@@ -73,7 +73,7 @@ The trained T5 model weights (~240 MB) are not included in this repository.
 # 2. Train the model (15-20 minutes on CPU)
 cd backend
 python model.py
-```
+
 
 The trained model will be saved to: `backend/models/abstractive_model/`
 
