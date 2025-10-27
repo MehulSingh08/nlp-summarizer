@@ -20,7 +20,3 @@ pyarrow==14.0.1
 # Tokenization (REQUIRED for T5)
 sentencepiece==0.1.99
 protobuf==3.20.3
-
-#Frontend Requirements
-streamlit==1.28.1
-streamlit-agraph
