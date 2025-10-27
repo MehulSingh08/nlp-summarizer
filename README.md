@@ -61,6 +61,25 @@ The API will be available at http://127.0.0.1:5000
    streamlit run app.py
 The web interface will open in your browser at http://localhost:8501
 
+## 🤖 Model Setup
+
+The trained T5 model weights (~240 MB) are not included in this repository.
+
+### To train the model:
+```bash
+# 1. Prepare your dataset
+# Place arxiv_data.csv in data/ folder with columns: 'abstracts', 'summaries'
+
+# 2. Train the model (15-20 minutes on CPU)
+cd backend
+python model.py
+```
+
+The trained model will be saved to: `backend/models/abstractive_model/`
+
+### Note
+The `models/` and `data/` folders are excluded via `.gitignore` to keep the repository lightweight.
+
 
 #  Updating / Adding Dependencies
 
