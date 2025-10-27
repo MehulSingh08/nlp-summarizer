@@ -190,7 +190,7 @@ def summarize():
         # ABSTRACTIVE SUMMARIZATION (T5)
         # ========================================
         if method == 'abstractive':
-            logger.info("🤖 Using Abstractive Model (T5)")
+            logger.info("Using Abstractive Model (T5)")
             
             if not abstractive_model.trained:
                 logger.info("Loading abstractive model...")
@@ -226,14 +226,14 @@ def summarize():
                 }
             }
             
-            logger.info("✅ Successfully generated abstractive summary")
+            logger.info("Successfully generated abstractive summary")
             return jsonify(response)
         
         # ========================================
         # EXTRACTIVE SUMMARIZATION (TextRank)
         # ========================================
         else:  # method == 'extractive'
-            logger.info("📊 Using Extractive Model (TextRank)")
+            logger.info("Using Extractive Model (TextRank)")
             
             cleaned_sentences = preprocess_text(text)
             original_sentences = get_original_sentences(text)
@@ -269,7 +269,7 @@ def summarize():
                 }
             }
             
-            logger.info("✅ Successfully generated extractive summary with graph")
+            logger.info("Successfully generated extractive summary with graph")
             return jsonify(response)
 
     except Exception as e:
@@ -309,7 +309,7 @@ def train_abstractive_model():
                 'error': f'Dataset file not found: {csv_path}'
             }), 400
         
-        logger.info(f"🚀 Starting abstractive model training with {csv_path}")
+        logger.info(f"Starting abstractive model training with {csv_path}")
         
         training_results = abstractive_model.train_on_arxiv_dataset(
             csv_path=csv_path,
@@ -377,22 +377,22 @@ def get_sample_text():
 
 if __name__ == '__main__':
     logger.info("=" * 60)
-    logger.info("🚀 Starting Text Summarizer API Server")
+    logger.info("Starting Text Summarizer API Server")
     logger.info("=" * 60)
     
     # Load extractive model (always available)
-    logger.info("📊 Extractive Model: Ready (TextRank)")
+    logger.info("Extractive Model: Ready (TextRank)")
     
     # Try to load abstractive model
-    logger.info("🤖 Checking Abstractive Model...")
+    logger.info("Checking Abstractive Model...")
     if abstractive_model.load_model():
-        logger.info("✅ Abstractive Model: Loaded successfully!")
+        logger.info("Abstractive Model: Loaded successfully!")
     else:
-        logger.info("⚠️  Abstractive Model: Not found")
+        logger.info("Abstractive Model: Not found")
         logger.info("   Run 'python model.py' to train the model first")
     
     logger.info("=" * 60)
-    logger.info("🌐 API Server running at: http://127.0.0.1:5000")
+    logger.info("API Server running at: http://127.0.0.1:5000")
     logger.info("=" * 60)
     print()
     

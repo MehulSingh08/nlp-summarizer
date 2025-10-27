@@ -36,7 +36,7 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("⚠️  Warning: transformers library not installed. Abstractive summarization will not be available.")
+    print("   Warning: transformers library not installed. Abstractive summarization will not be available.")
     print("   Install with: pip install transformers torch datasets")
 
 # Configure logging
@@ -310,7 +310,7 @@ class CustomSummarizerModel:
     
     def __init__(self):
         self.trained = True  # TextRank doesn't need training
-        logger.info("✅ Extractive TextRank model initialized")
+        logger.info("  Extractive TextRank model initialized")
     
     def enhanced_summarize(self, text: str, num_sentences: int = 3) -> Dict:
         """
@@ -383,7 +383,7 @@ class AbstractiveSummarizerModel:
             model_name: Hugging Face model name (default: t5-small)
         """
         if not TRANSFORMERS_AVAILABLE:
-            logger.error("❌ Transformers library not available!")
+            logger.error("  Transformers library not available!")
             self.trained = False
             return
         
@@ -394,15 +394,15 @@ class AbstractiveSummarizerModel:
         # Initialize tokenizer immediately for training
         try:
             self.tokenizer = T5Tokenizer.from_pretrained(model_name, legacy=False)
-            logger.info(f"✅ Tokenizer loaded: {model_name}")
+            logger.info(f"Tokenizer loaded: {model_name}")
         except Exception as e:
-            logger.warning(f"⚠️  Could not load tokenizer: {e}")
+            logger.warning(f"Could not load tokenizer: {e}")
             self.tokenizer = None
         
         self.model = None
         self.trained = False
         
-        logger.info(f"🤖 Abstractive model initialized (device: {self.device})")
+        logger.info(f"Abstractive model initialized (device: {self.device})")
     
     def load_model(self, model_path: Optional[str] = None) -> bool:
         """
@@ -419,10 +419,10 @@ class AbstractiveSummarizerModel:
                 # Check if fine-tuned model exists
                 if os.path.exists(self.model_dir):
                     model_path = self.model_dir
-                    logger.info(f"📂 Loading fine-tuned model from {model_path}")
+                    logger.info(f"Loading fine-tuned model from {model_path}")
                 else:
                     model_path = self.model_name
-                    logger.info(f"📂 Loading base model: {model_path}")
+                    logger.info(f"Loading base model: {model_path}")
             
             # Load tokenizer if not already loaded
             if self.tokenizer is None:
@@ -433,11 +433,11 @@ class AbstractiveSummarizerModel:
             self.model.eval()
             
             self.trained = True
-            logger.info(f"✅ Model loaded successfully on {self.device}")
+            logger.info(f" Model loaded successfully on {self.device}")
             return True
         
         except Exception as e:
-            logger.error(f"❌ Error loading model: {str(e)}")
+            logger.error(f"Error loading model: {str(e)}")
             self.trained = False
             return False
     
@@ -461,7 +461,7 @@ class AbstractiveSummarizerModel:
             Generated summary text
         """
         if not self.trained:
-            logger.warning("⚠️  Model not loaded, attempting to load...")
+            logger.warning("Model not loaded, attempting to load...")
             if not self.load_model():
                 return "Error: Model not available"
         
@@ -494,7 +494,7 @@ class AbstractiveSummarizerModel:
             return summary
         
         except Exception as e:
-            logger.error(f"❌ Error generating summary: {str(e)}")
+            logger.error(f"Error generating summary: {str(e)}")
             return f"Error: {str(e)}"
     
     def train_on_arxiv_dataset(self, 
@@ -524,11 +524,11 @@ class AbstractiveSummarizerModel:
         
         try:
             logger.info("=" * 60)
-            logger.info("🚀 Starting T5 Model Training on arXiv Dataset")
+            logger.info("Starting T5 Model Training on arXiv Dataset")
             logger.info("=" * 60)
             
             # Load dataset
-            logger.info(f"📂 Loading dataset from: {csv_path}")
+            logger.info(f"Loading dataset from: {csv_path}")
             df = pd.read_csv(csv_path)
             
             # Check required columns
@@ -540,7 +540,7 @@ class AbstractiveSummarizerModel:
             
             # Sample data
             df = df.head(max_samples)
-            logger.info(f"📊 Using {len(df)} samples for training")
+            logger.info(f"Using {len(df)} samples for training")
             
             # Prepare data
             train_data = []
@@ -557,13 +557,13 @@ class AbstractiveSummarizerModel:
                     'error': 'No valid training samples found'
                 }
             
-            logger.info(f"✅ Prepared {len(train_data)} valid training samples")
+            logger.info(f"  Prepared {len(train_data)} valid training samples")
             
             # Create dataset
             dataset = Dataset.from_list(train_data)
             
             # Tokenize dataset
-            logger.info("🔤 Tokenizing dataset...")
+            logger.info("Tokenizing dataset...")
             
             # Ensure tokenizer is loaded
             if self.tokenizer is None:
@@ -597,10 +597,10 @@ class AbstractiveSummarizerModel:
             train_dataset = split_dataset['train']
             eval_dataset = split_dataset['test']
             
-            logger.info(f"📊 Train samples: {len(train_dataset)}, Validation samples: {len(eval_dataset)}")
+            logger.info(f"Train samples: {len(train_dataset)}, Validation samples: {len(eval_dataset)}")
             
             # Load model
-            logger.info(f"🤖 Loading base model: {self.model_name}")
+            logger.info(f"Loading base model: {self.model_name}")
             if not self.trained:
                 self.load_model()
             
@@ -639,18 +639,18 @@ class AbstractiveSummarizerModel:
             
             # Train
             logger.info("=" * 60)
-            logger.info("🏋️  Starting Training...")
+            logger.info("Starting Training...")
             logger.info("=" * 60)
             
             train_result = trainer.train()
             
             # Save model
-            logger.info(f"💾 Saving fine-tuned model to: {self.model_dir}")
+            logger.info(f"Saving fine-tuned model to: {self.model_dir}")
             trainer.save_model(self.model_dir)
             self.tokenizer.save_pretrained(self.model_dir)
             
             logger.info("=" * 60)
-            logger.info("✅ Training Complete!")
+            logger.info("  Training Complete!")
             logger.info("=" * 60)
             
             return {
@@ -662,7 +662,7 @@ class AbstractiveSummarizerModel:
             }
         
         except Exception as e:
-            logger.error(f"❌ Training failed: {str(e)}")
+            logger.error(f"  Training failed: {str(e)}")
             return {
                 'success': False,
                 'error': str(e)
@@ -697,7 +697,7 @@ if __name__ == "__main__":
     
     # Check if dataset exists
     if not os.path.exists(ARXIV_CSV_PATH):
-        print(f"❌ Dataset not found: {ARXIV_CSV_PATH}")
+        print(f"  Dataset not found: {ARXIV_CSV_PATH}")
         print(f"   Please ensure arxiv_data.csv is in the data/ folder")
         print()
         print("   Required CSV format:")
@@ -705,7 +705,7 @@ if __name__ == "__main__":
         print("   - Column 'summaries': Reference summaries")
         exit(1)
     
-    print(f"📂 Dataset found: {ARXIV_CSV_PATH}")
+    print(f"Dataset found: {ARXIV_CSV_PATH}")
     print()
     
     # Initialize models
@@ -716,12 +716,12 @@ if __name__ == "__main__":
     
     # Train Abstractive Model
     print("=" * 60)
-    print("📚 Training Abstractive Model (T5)")
+    print("Training Abstractive Model (T5)")
     print("=" * 60)
-    print(f"⚙️  Configuration:")
-    print(f"   - Samples: {MAX_SAMPLES}")
-    print(f"   - Epochs: {NUM_EPOCHS}")
-    print(f"   - Model: t5-small")
+    print(f"Configuration:")
+    print(f" - Samples: {MAX_SAMPLES}")
+    print(f" - Epochs: {NUM_EPOCHS}")
+    print(f" - Model: t5-small")
     print()
     
     input("Press Enter to start training (or Ctrl+C to cancel)...")
@@ -737,21 +737,21 @@ if __name__ == "__main__":
     
     print()
     print("=" * 60)
-    print("📊 Training Results")
+    print("Training Results")
     print("=" * 60)
     
     if result['success']:
-        print("✅ Training Successful!")
+        print(" Training Successful!")
         print(f"   - Loss: {result.get('train_loss', 'N/A')}")
         print(f"   - Epochs: {result.get('epochs', 'N/A')}")
         print(f"   - Samples: {result.get('samples', 'N/A')}")
         print(f"   - Model saved to: {result.get('model_saved', 'N/A')}")
     else:
-        print("❌ Training Failed!")
-        print(f"   Error: {result.get('error', 'Unknown error')}")
+        print("  Training Failed!")
+        print(f" Error: {result.get('error', 'Unknown error')}")
     
     print()
     print("=" * 60)
-    print("🎉 Model training complete!")
-    print("   You can now start the backend server with: python app.py")
+    print("Model training complete!")
+    print("You can now start the backend server with: python app.py")
     print("=" * 60)
