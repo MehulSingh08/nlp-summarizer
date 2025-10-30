@@ -77,10 +77,6 @@ models/
 *.ckpt
 checkpoint-*/
 
-# Dataset files (too large for Git)
-data/*.csv
-backend/data/
-*.xlsx
 
 # Hugging Face cache
 .cache/
