@@ -32,9 +32,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# ============================================
 # UTILITY FUNCTIONS
-# ============================================
 
 def enhance_graph_visualization(graph_data, sentence_scores, original_sentences):
     """
@@ -138,9 +136,7 @@ def enhance_graph_visualization(graph_data, sentence_scores, original_sentences)
         return graph_data  # Return original data if enhancement fails
 
 
-# ============================================
 # API ENDPOINTS
-# ============================================
 
 @app.route('/', methods=['GET'])
 def health_check():
@@ -186,9 +182,7 @@ def summarize():
 
         logger.info(f"Received summarization request (method: {method}) for text of length: {len(text)}")
 
-        # ========================================
         # ABSTRACTIVE SUMMARIZATION (T5)
-        # ========================================
         if method == 'abstractive':
             logger.info("Using Abstractive Model (T5)")
             
