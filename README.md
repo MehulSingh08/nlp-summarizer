@@ -1,155 +1,258 @@
-# nlp-summarizer
+# NLP Summarizer
 
+An educational text summarization system using knowledge graphs and hybrid machine learning approaches for academic research papers.
 
-Educational Text Summarization using Knowledge Graphs  
-Team collaborative NLP course project.
+## Overview
 
----
-## 1.  Quick Setup
+This project implements a sophisticated text summarization pipeline combining:
+- **Extractive Summarization**: Enhanced TextRank algorithm with domain adaptation
+- **Knowledge Graphs**: Semantic relationship extraction and visualization
+- **Hybrid Learning**: TF-IDF vectorization with K-Means clustering
+- **Flask Backend**: RESTful API for model serving
+- **Streamlit Frontend**: Interactive UI for document analysis
+
+The system processes academic abstracts using learned patterns from 5,000+ arXiv papers to generate coherent, contextually-aware summaries.
+
+## Dataset
+
+- **Source**: arXiv Academic Papers Dataset
+- **Format**: CSV with abstracts and reference summaries
+- **Features**: Research paper abstracts and corresponding summaries
+- **File**: `data/arxiv_data.csv`
+
+## Project Structure
+
+```
+kg-summarizer/
+├── data/
+│   └── arxiv_data.csv
+├── backend/
+│   ├── app.py
+│   ├── model.py
+│   ├── utils.py
+│   └── requirements.txt
+├── frontend/
+│   ├── app.py
+│   └── requirements.txt
+├── models/
+│   └── abstractive_model/
+├── .gitignore
+└── README.md
+```
+
+## Installation
+
+### Prerequisites
+
+- Python 3.11
+- pip package manager
+
+### Setup
 
 ```bash
-# Clone repo
+# Clone repository
 git clone https://github.com/MehulSingh08/kg-summarizer.git
-
 cd kg-summarizer
 
 # Create virtual environment
-py -3.11 -m venv venv
+python -m venv venv
 
-# Activate
+# Activate environment
 # Windows
 venv\Scripts\activate
 
 # macOS/Linux
 source venv/bin/activate
 
-# Prerequisites
-
-Python 3.11
-pip package manager
-
-# Installation
-
-1.     Clone or download the project files
-    Create the data folder:
-
+# Create data folder
 mkdir data
 
-2.  Set up the backend:
-
+# Install backend dependencies
 cd backend
 pip install -r requirements.txt
 
-
-3.  Set up the frontend (in a new terminal):
-
+# Install frontend dependencies (in new terminal)
 cd frontend
-   pip install -r requirements.txt
+pip install -r requirements.txt
+```
 
-#  Running the Application
-
-1.  Start the backend server:
-
-  cd backend
-   python app.py
-
-The API will be available at http://127.0.0.1:5000
-
-2.  Start the frontend (in a new terminal):
-
-   cd frontend
-   streamlit run app.py
-The web interface will open in your browser at http://localhost:8501
-
-## 🤖 Model Setup
+## Model Setup
 
 The trained T5 model weights (~240 MB) are not included in this repository.
 
-### To train the model:
+### Training the Model
+
 ```bash
-# 1. Prepare your dataset
+# Prepare dataset
 # Place arxiv_data.csv in data/ folder with columns: 'abstracts', 'summaries'
 
-# 2. Train the model (15-20 minutes on CPU)
+# Train model (15-20 minutes on CPU)
 cd backend
 python model.py
+```
 
+The trained model will be saved to `backend/models/abstractive_model/`
 
-The trained model will be saved to: `backend/models/abstractive_model/`
+**Note**: The `models/` and `data/` folders are excluded via `.gitignore` to keep the repository lightweight.
 
-### Note
-The `models/` and `data/` folders are excluded via `.gitignore` to keep the repository lightweight.
+## Running the Application
 
+### Start Backend Server
 
-#  Updating / Adding Dependencies
+```bash
+cd backend
+python app.py
+```
 
+Backend runs on `http://127.0.0.1:5000`
+
+### Start Frontend Interface
+
+```bash
+# In a new terminal
+cd frontend
+streamlit run app.py
+```
+
+Frontend runs on `http://localhost:8501`
+
+## Usage
+
+### Web Interface
+
+1. Open `http://localhost:8501` in your browser
+2. Upload or paste academic text
+3. Click "Generate Summary"
+4. View extractive summary with knowledge graph visualization
+
+### API Endpoints
+
+**Generate Summary**
+```bash
+POST http://127.0.0.1:5000/summarize
+Content-Type: application/json
+
+{
+  "text": "Your academic abstract here..."
+}
+```
+
+**Response**
+```json
+{
+  "summary": "Generated summary text",
+  "knowledge_graph": {...},
+  "topic_cluster": 5
+}
+```
+
+## Model Architecture
+
+### Hybrid Unsupervised Learning System
+
+**1. Domain-Specific TF-IDF Vectorizer**
+- Learns word importance from 5,000+ arXiv abstracts
+- Builds custom vocabulary weights for academic domain
+- Output: Domain-aware word importance scores
+
+**2. K-Means Topic Clustering**
+- Discovers hidden topic patterns in research papers
+- Groups similar papers into 20 topic clusters
+- Output: Topic classification for new text
+
+**3. Sentence Importance Pattern Learner**
+- Analyzes sentence position and word patterns
+- Identifies where key information appears in abstracts
+- Output: Custom scoring weights for sentence ranking
+
+**4. Enhanced TextRank Scorer**
+- Combines all learned patterns for final scoring
+- Uses trained components for domain-aware ranking
+- Output: Context-aware extractive summaries
+
+## Key Features
+
+- **Domain Adaptation**: Trained on academic research papers
+- **Knowledge Graph Generation**: Visual semantic relationships
+- **Topic Classification**: Automatic research area detection
+- **Hybrid Approach**: Combines unsupervised and graph-based methods
+- **Interactive UI**: Streamlit-based dashboard
+- **RESTful API**: Flask backend for easy integration
+
+## Technical Stack
+
+**Backend**
+- Python 3.11
+- Flask
+- scikit-learn
+- transformers (T5)
+- pandas, numpy
+- NetworkX
+
+**Frontend**
+- Streamlit
+- Plotly
+- Requests
+
+## Git Workflow
+
+### Before Work
+```bash
+git pull origin main
+```
+
+### During Work
+```bash
+git add .
+git commit -m "Descriptive message"
+```
+
+### After Work
+```bash
+git pull origin main
+git push origin main
+```
+
+### Adding Dependencies
+```bash
 pip install package-name
 pip freeze > requirements.txt
 git add requirements.txt
 git commit -m "Add package-name dependency"
 git push origin main
+```
 
-#  Git Workflow
-Before work:
+## Limitations
 
-git pull origin main
-While working:
+- Designed for academic text only
+- Single-server deployment
+- No real-time model updates
+- Limited to English language
+- Requires pre-trained model weights
 
+## Future Enhancements
 
-git add .
-git commit -m "Descriptive message"
-After work:
+- Abstractive summarization with transformers
+- Multi-document summarization
+- Real-time knowledge graph updates
+- Support for multiple languages
+- Advanced graph neural networks
+- Production-grade API authentication
 
+## Acknowledgments
 
-git pull origin main  # check for conflicts
-git push origin main
+- Dataset: arXiv Academic Papers
+- Research: TextRank algorithm by Mihalcea and Tarau
+- Framework: Hugging Face Transformers
 
+## License
 
+This project is for educational purposes as part of an NLP course.
 
-#  Project Strcuture
+## Contact
 
-kg-summarizer/
-├── backend/
-│   ├── app.py                  # Flask API server
-│   ├── model.py                # TextRank algorithm implementation
-│   ├── utils.py                # Text preprocessing utilities
-│   └── requirements.txt        # Backend dependencies
-│
-├── frontend/
-│   ├── app.py                  # Streamlit user interface
-│   └── requirements.txt        # Frontend dependencies
-│
-├── data/
-│   └── arxiv_data.csv          # Your dataset (create this folder)
-│
-├── .gitignore
-└── README.md
+For questions or issues, please open an issue in the repository.
 
-Prominent Questions: 
-Q1. What Model Are We Actually Training?
-We're training a Hybrid Unsupervised Learning System with 4 components:
-1. Domain-Specific TF-IDF Vectorizer
+---
 
-What it learns: Which words are important in academic papers
-How: Analyzes 5,000+ arXiv abstracts to build vocabulary weights
-Result: Custom word importance scores (not generic English)
-
-2. K-Means Topic Clustering Model
-
-What it learns: Hidden topic patterns in academic research
-How: Groups similar papers into 20 topic clusters
-Result: Can classify new text into learned research areas
-
-3. Sentence Importance Pattern Learner
-
-What it learns: Which sentence positions/words indicate importance
-How: Analyzes where key information appears in abstracts
-Result: Custom scoring weights for different sentence types
-
-4. Enhanced TextRank Scorer
-
-What it learns: How to combine all learned patterns
-How: Uses trained components to score sentences better
-Result: Domain-aware summarization
-
-
+**Note**: This is a collaborative educational project. The `models/` and `data/` directories are not tracked in version control due to file size constraints.
