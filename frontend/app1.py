@@ -1,9 +1,6 @@
 # frontend/app.py
-# ===========================================
 # Streamlit Frontend for Text Summarizer
-# - Extractive Summarization (TextRank)
-# - Abstractive Summarization (T5)
-# ===========================================
+# Supports both Extractive (TextRank) and Abstractive (T5) Summarization
 
 import streamlit as st
 import requests
@@ -104,16 +101,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# API Configuration
+# Backend API endpoint
 API_BASE_URL = "http://127.0.0.1:5000"
 
 
-# ============================================
-# API HELPER FUNCTIONS
-# ============================================
+# API communication functions
 
 def check_api_health():
-    """Check if the backend API is running."""
+    """Check if the backend API is running and responsive."""
     try:
         response = requests.get(f"{API_BASE_URL}/", timeout=5)
         return response.status_code == 200
@@ -122,7 +117,7 @@ def check_api_health():
 
 
 def get_sample_text():
-    """Get sample text from the API."""
+    """Fetch sample text from API or return fallback text."""
     try:
         response = requests.get(f"{API_BASE_URL}/sample-text", timeout=10)
         if response.status_code == 200:
@@ -130,7 +125,7 @@ def get_sample_text():
     except requests.exceptions.RequestException:
         pass
     
-    # Fallback sample text if API is not available
+    # Fallback sample text if API is unavailable
     return """
     Machine learning is a subset of artificial intelligence that focuses on the development of algorithms and statistical models that enable computer systems to automatically improve their performance on a specific task through experience. Unlike traditional programming, where explicit instructions are provided for every possible scenario, machine learning systems learn patterns from data and make predictions or decisions based on that learning.
 
@@ -145,7 +140,7 @@ def get_sample_text():
 
 
 def get_model_info():
-    """Get information about the current models."""
+    """Retrieve current model configuration and status from backend."""
     try:
         response = requests.get(f"{API_BASE_URL}/model-info", timeout=10)
         
@@ -163,9 +158,12 @@ def summarize_text(text, num_sentences=3, method='extractive'):
     Send text to backend for summarization.
     
     Args:
-        text: Input text
+        text: Input text to summarize
         num_sentences: Number of sentences for extractive method
         method: 'extractive' or 'abstractive'
+    
+    Returns:
+        dict: Response containing summary and metadata
     """
     try:
         payload = {
@@ -177,7 +175,7 @@ def summarize_text(text, num_sentences=3, method='extractive'):
         response = requests.post(
             f"{API_BASE_URL}/summarize",
             json=payload,
-            timeout=60  # Increased timeout for T5 model
+            timeout=60  # Longer timeout for T5 model processing
         )
         
         if response.status_code == 200:
@@ -197,12 +195,18 @@ def summarize_text(text, num_sentences=3, method='extractive'):
         return {'success': False, 'error': 'Invalid response from server'}
 
 
-# ============================================
-# VISUALIZATION FUNCTIONS
-# ============================================
+# Visualization functions
 
 def create_graph_html(graph_data):
-    """Create an interactive network graph using vis.js."""
+    """
+    Generate interactive network graph HTML using vis.js library.
+    
+    Args:
+        graph_data: Dictionary containing nodes and edges
+    
+    Returns:
+        str: HTML content with embedded graph or None if invalid data
+    """
     if not graph_data or not graph_data.get('nodes'):
         return None
     
@@ -294,7 +298,7 @@ def create_graph_html(graph_data):
             
             var network = new vis.Network(container, data, options);
             
-            // Add click event for node selection
+            // Log selected node information on click
             network.on("click", function(params) {{
                 if (params.nodes.length > 0) {{
                     var nodeId = params.nodes[0];
@@ -311,8 +315,8 @@ def create_graph_html(graph_data):
 
 
 def display_interactive_graph(graph_data):
-    """Display the interactive knowledge graph."""
-    st.subheader("🕸️ Knowledge Graph Visualization")
+    """Render interactive knowledge graph with statistics."""
+    st.subheader("Knowledge Graph Visualization")
     st.markdown("""
     This interactive graph shows the relationships between sentences in the text. 
     **Red nodes** are selected for the summary, **blue nodes** are other sentences.
@@ -323,7 +327,7 @@ def display_interactive_graph(graph_data):
     if html_content:
         components.html(html_content, height=700, scrolling=False)
         
-        # Display graph statistics
+        # Display graph statistics if available
         stats = graph_data.get('stats', {})
         if stats:
             col1, col2, col3, col4 = st.columns(4)
@@ -340,8 +344,8 @@ def display_interactive_graph(graph_data):
 
 
 def display_simple_graph(graph_data):
-    """Display simple graph data as tables."""
-    st.subheader("📋 Graph Data Details")
+    """Display graph data as tabular information."""
+    st.subheader("Graph Data Details")
     
     tab1, tab2 = st.tabs(["Nodes (Sentences)", "Edges (Connections)"])
     
@@ -362,67 +366,65 @@ def display_simple_graph(graph_data):
             st.info("No edge data available.")
 
 
-# ============================================
-# MAIN APPLICATION
-# ============================================
+# Main application
 
 def main():
-    # Header
-    st.markdown('<h1 class="main-header">📚 Educational Text Summarizer</h1>', unsafe_allow_html=True)
+    # Application header
+    st.markdown('<h1 class="main-header">Educational Text Summarizer</h1>', unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align: center; margin-bottom: 2rem;'>
         <p style='font-size: 1.2rem; color: #666;'>
             Powered by Knowledge Graphs & Deep Learning
         </p>
         <div>
-            <span class="method-badge badge-extractive">🔗 Extractive (TextRank)</span>
-            <span class="method-badge badge-abstractive">🤖 Abstractive (T5)</span>
+            <span class="method-badge badge-extractive">Extractive (TextRank)</span>
+            <span class="method-badge badge-abstractive">Abstractive (T5)</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Check API status
+    # Verify backend API connection
     api_status = check_api_health()
     
     if api_status:
-        st.success("✅ Backend API is connected")
+        st.success("Backend API is connected")
         
-        # Get model info
+        # Display model information
         model_info = get_model_info()
         if model_info.get('success'):
-            with st.expander("ℹ️ Model Information"):
+            with st.expander("Model Information"):
                 models = model_info.get('models', {})
                 
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.markdown("### 🔗 Extractive Model")
+                    st.markdown("### Extractive Model")
                     extractive = models.get('extractive', {})
                     st.write(f"**Type:** {extractive.get('model_type', 'N/A')}")
                     st.write(f"**Method:** {extractive.get('method', 'N/A')}")
-                    st.write(f"**Status:** {'✅ Ready' if extractive.get('trained') else '❌ Not available'}")
+                    st.write(f"**Status:** {'Ready' if extractive.get('trained') else 'Not available'}")
                 
                 with col2:
-                    st.markdown("### 🤖 Abstractive Model")
+                    st.markdown("### Abstractive Model")
                     abstractive = models.get('abstractive', {})
                     st.write(f"**Type:** {abstractive.get('model_type', 'N/A')}")
                     st.write(f"**Model:** {abstractive.get('model_name', 'N/A')}")
                     st.write(f"**Device:** {abstractive.get('device', 'N/A')}")
-                    st.write(f"**Status:** {'✅ Ready' if abstractive.get('trained') else '❌ Not trained'}")
+                    st.write(f"**Status:** {'Ready' if abstractive.get('trained') else 'Not trained'}")
                     
                     if not abstractive.get('trained'):
-                        st.warning("⚠️ Abstractive model not trained. Run `python model.py` to train it.")
+                        st.warning("Abstractive model not trained. Run `python model.py` to train it.")
     else:
-        st.error("❌ Backend API is not available. Please start the backend server first.")
+        st.error("Backend API is not available. Please start the backend server first.")
         st.code("cd backend && python app.py", language="bash")
     
     st.markdown("---")
     
     # Sidebar configuration
     with st.sidebar:
-        st.header("⚙️ Configuration")
+        st.header("Configuration")
         
-        # Number of sentences (for extractive only)
+        # Control number of sentences for extractive summarization
         num_sentences = st.slider(
             "Number of sentences (Extractive)",
             min_value=1,
@@ -433,34 +435,34 @@ def main():
         
         st.markdown("---")
         
-        # Sample text button
-        if st.button("📝 Load Sample Text"):
+        # Load sample text into input
+        if st.button("Load Sample Text"):
             st.session_state.input_text = get_sample_text().strip()
             st.rerun()
         
         st.markdown("---")
         
-        # Visualization options (for extractive only)
-        st.subheader("📊 Visualization Options")
+        # Visualization options for extractive method
+        st.subheader("Visualization Options")
         st.caption("(Only for Extractive Method)")
         show_interactive_graph = st.checkbox("Interactive Graph", value=True)
         show_simple_graph = st.checkbox("Simple Graph Data", value=False)
         
         st.markdown("---")
         
-        # About
-        with st.expander("ℹ️ About"):
+        # Application information
+        with st.expander("About"):
             st.markdown("""
             **Educational Text Summarizer**
             
             This application provides two summarization methods:
             
-            **🔗 Extractive (TextRank)**
+            **Extractive (TextRank)**
             - Selects important sentences from the original text
             - Graph-based algorithm using PageRank
             - Shows knowledge graph visualization
             
-            **🤖 Abstractive (T5)**
+            **Abstractive (T5)**
             - Generates new summary text
             - Fine-tuned on educational texts (arXiv)
             - Uses transformer deep learning
@@ -471,10 +473,9 @@ def main():
             3. View results and visualizations
             """)
     
-    # Main content area
-    st.header("📝 Input Text")
+    # Text input section
+    st.header("Input Text")
     
-    # Text input
     input_text = st.text_area(
         "Enter the text you want to summarize:",
         height=250,
@@ -482,7 +483,7 @@ def main():
         placeholder="Paste your text here (minimum 50 characters)..."
     )
     
-    # Character count
+    # Display character count and validation
     if input_text:
         char_count = len(input_text.strip())
         col1, col2 = st.columns([3, 1])
@@ -490,18 +491,18 @@ def main():
             st.caption(f"Character count: {char_count}")
         with col2:
             if char_count >= 50:
-                st.caption("✅ Ready to summarize")
+                st.caption("Ready to summarize")
             else:
-                st.caption(f"❌ Need {50 - char_count} more characters")
+                st.caption(f"Need {50 - char_count} more characters")
     
-    # Summarization buttons
-    st.markdown("### 🚀 Choose Summarization Method")
+    # Summarization method selection
+    st.markdown("### Choose Summarization Method")
     
     col1, col2 = st.columns(2)
     
     with col1:
         extractive_button = st.button(
-            "🔗 Extractive Summary",
+            "Extractive Summary",
             type="primary",
             use_container_width=True,
             help="Extract important sentences using TextRank algorithm + Knowledge Graph"
@@ -509,23 +510,24 @@ def main():
     
     with col2:
         abstractive_button = st.button(
-            "🤖 Abstractive Summary",
+            "Abstractive Summary",
             type="primary",
             use_container_width=True,
             help="Generate new summary using T5 transformer model"
         )
     
-    # Process Extractive Summarization
+    # Handle extractive summarization request
     if extractive_button:
         if not input_text or len(input_text.strip()) < 50:
-            st.markdown('<div class="error-box">❌ Please enter at least 50 characters of text to summarize.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="error-box">Please enter at least 50 characters of text to summarize.</div>', unsafe_allow_html=True)
         elif not api_status:
-            st.markdown('<div class="error-box">❌ Backend API is not available. Please start the backend server first.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="error-box">Backend API is not available. Please start the backend server first.</div>', unsafe_allow_html=True)
         else:
-            with st.spinner("🔄 Running Extractive Summarization (TextRank)..."):
+            with st.spinner("Running Extractive Summarization (TextRank)..."):
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
+                # Visual feedback during processing
                 for i in range(100):
                     progress_bar.progress(i + 1)
                     if i < 20:
@@ -550,23 +552,24 @@ def main():
                     st.session_state.show_interactive_graph = show_interactive_graph
                     st.session_state.show_simple_graph = show_simple_graph
                     st.session_state.method_used = 'extractive'
-                    st.success("✅ Extractive summarization complete!")
+                    st.success("Extractive summarization complete!")
                     st.rerun()
                 else:
                     error_msg = result.get('error', 'Unknown error occurred')
-                    st.markdown(f'<div class="error-box">❌ Error: {error_msg}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="error-box">Error: {error_msg}</div>', unsafe_allow_html=True)
     
-    # Process Abstractive Summarization
+    # Handle abstractive summarization request
     if abstractive_button:
         if not input_text or len(input_text.strip()) < 50:
-            st.markdown('<div class="error-box">❌ Please enter at least 50 characters of text to summarize.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="error-box">Please enter at least 50 characters of text to summarize.</div>', unsafe_allow_html=True)
         elif not api_status:
-            st.markdown('<div class="error-box">❌ Backend API is not available. Please start the backend server first.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="error-box">Backend API is not available. Please start the backend server first.</div>', unsafe_allow_html=True)
         else:
-            with st.spinner("🤖 Running Abstractive Summarization (T5)... This may take a moment..."):
+            with st.spinner("Running Abstractive Summarization (T5)... This may take a moment..."):
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
+                # Visual feedback during processing
                 for i in range(100):
                     progress_bar.progress(i + 1)
                     if i < 30:
@@ -585,33 +588,33 @@ def main():
                 if result.get('success'):
                     st.session_state.result = result
                     st.session_state.method_used = 'abstractive'
-                    st.success("✅ Abstractive summarization complete!")
+                    st.success("Abstractive summarization complete!")
                     st.rerun()
                 else:
                     error_msg = result.get('error', 'Unknown error occurred')
-                    st.markdown(f'<div class="error-box">❌ Error: {error_msg}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="error-box">Error: {error_msg}</div>', unsafe_allow_html=True)
     
-    # Display results
+    # Display summarization results
     if hasattr(st.session_state, 'result') and st.session_state.result.get('success'):
         result = st.session_state.result
         method_used = st.session_state.get('method_used', 'unknown')
         
         st.markdown("---")
-        st.header("📊 Results")
+        st.header("Results")
         
-        # Method badge
+        # Display method used
         method_display = {
-            'extractive': '🔗 Extractive (TextRank)',
-            'abstractive': '🤖 Abstractive (T5)',
-            'extractive_textrank': '🔗 Extractive (TextRank)',
-            'abstractive_t5': '🤖 Abstractive (T5)'
+            'extractive': 'Extractive (TextRank)',
+            'abstractive': 'Abstractive (T5)',
+            'extractive_textrank': 'Extractive (TextRank)',
+            'abstractive_t5': 'Abstractive (T5)'
         }
         
         result_method = result.get('method', method_used)
         st.info(f"**Method Used:** {method_display.get(result_method, result_method)}")
         
-        # Summary section
-        st.subheader("📝 Generated Summary")
+        # Display summary with appropriate styling
+        st.subheader("Generated Summary")
         summary = result.get('summary', 'No summary available')
         
         if 'extractive' in result_method:
@@ -619,10 +622,10 @@ def main():
         else:
             st.markdown(f'<div class="abstractive-box"><strong>Summary:</strong><br><br>{summary}</div>', unsafe_allow_html=True)
         
-        # Metadata
+        # Display metadata and statistics
         if 'metadata' in result:
             metadata = result['metadata']
-            st.subheader("📈 Statistics")
+            st.subheader("Statistics")
             
             if 'extractive' in result_method:
                 col1, col2, col3, col4 = st.columns(4)
@@ -643,7 +646,7 @@ def main():
                 with col3:
                     st.metric("Approach", metadata.get('approach', 'N/A'))
         
-        # Graph visualization (only for extractive)
+        # Show graph visualization for extractive method
         if 'extractive' in result_method and 'graph_data' in result:
             st.markdown("---")
             
@@ -654,13 +657,14 @@ def main():
                 st.markdown("---")
                 display_simple_graph(result['graph_data'])
             
-            # Sentence importance scores
+            # Display sentence importance scores
             if 'sentence_scores' in result:
                 st.markdown("---")
-                st.subheader("📊 Sentence Importance Scores")
+                st.subheader("Sentence Importance Scores")
                 
                 scores = result['sentence_scores']
                 if scores:
+                    # Truncate long sentences for display
                     scores_data = [
                         {'Sentence': k[:100] + "..." if len(k) > 100 else k, 'Importance Score': v}
                         for k, v in scores.items()
@@ -671,9 +675,9 @@ def main():
                     st.dataframe(df_scores, use_container_width=True)
                     st.bar_chart(df_scores.set_index('Sentence')['Importance Score'])
         
-        # Download options
+        # Provide download options
         st.markdown("---")
-        st.subheader("💾 Download Results")
+        st.subheader("Download Results")
         
         col1, col2 = st.columns(2)
         
@@ -692,7 +696,7 @@ SUMMARY:
 Generated by Knowledge Graph Text Summarizer
             """
             st.download_button(
-                label="📄 Download Summary",
+                label="Download Summary",
                 data=summary_text,
                 file_name=f"summary_{result_method}.txt",
                 mime="text/plain"
@@ -702,7 +706,7 @@ Generated by Knowledge Graph Text Summarizer
             if 'graph_data' in result:
                 graph_json = json.dumps(result, indent=2)
                 st.download_button(
-                    label="📊 Download Full Results (JSON)",
+                    label="Download Full Results (JSON)",
                     data=graph_json,
                     file_name=f"results_{result_method}.json",
                     mime="application/json"
