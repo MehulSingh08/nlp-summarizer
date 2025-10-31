@@ -32,7 +32,7 @@ kg-summarizer/
 │   ├── utils.py
 │   └── requirements.txt
 ├── frontend/
-│   ├── app.py
+│   ├── app1.py
 │   └── requirements.txt
 ├── models/
 │   └── abstractive_model/
@@ -232,7 +232,6 @@ git push origin main
 
 ## Future Enhancements
 
-- Abstractive summarization with transformers
 - Multi-document summarization
 - Real-time knowledge graph updates
 - Support for multiple languages
@@ -244,6 +243,7 @@ git push origin main
 - Dataset: arXiv Academic Papers
 - Research: TextRank algorithm by Mihalcea and Tarau
 - Framework: Hugging Face Transformers
+- Baseline Model: T5-base hugging face model
 
 ## License
 
