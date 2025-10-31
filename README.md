@@ -1,4 +1,4 @@
-# kg-summarizer
+# nlp-summarizer
 
 
 Educational Text Summarization using Knowledge Graphs  
