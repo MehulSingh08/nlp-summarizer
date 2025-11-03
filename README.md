@@ -51,7 +51,7 @@ kg-summarizer/
 
 ```bash
 # Clone repository
-git clone https://github.com/MehulSingh08/kg-summarizer.git
+git clone https://github.com/MehulSingh08/nlp-summarizer.git
 cd kg-summarizer
 
 # Create virtual environment
